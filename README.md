@@ -1,1 +1,1 @@
-# ElasticSearch API in Rust
+# Rust client for ElasticSearch
