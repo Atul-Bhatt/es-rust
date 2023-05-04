@@ -35,14 +35,27 @@ impl From<json::BuilderError> for EsError {
 }
 
 struct Client {
+    host: String,
+    port: u32,
     http_client: hyper::Client<HttpConnector>,
 }
 
 impl Client {
-    fn new() -> Client {
+    pub fn new(host: String, port: u32) -> Client {
         Client {
+            host: host,
+            port: port,
             http_client: hyper::Client::new()
         }
+    }
+
+    fn get(&mut self, url: &str, body: Option<&Json>) -> Result<Json, EsError> {
+        let rb = self.http_client.get(url);
+        let mut result = match body {
+            Some(json) => rb.body(json.as_string().unwrap()),
+            None       => rb
+        }.send();
+        Ok(Json::from_reader(&mut result)?)
     }
 }
 
@@ -52,6 +65,6 @@ mod tests {
 
     #[test]
     fn create_client_working() {
-        let mut client = Client::new();
+        let mut client = Client::new("localhost".to_string(), 9200);
     }
 }
